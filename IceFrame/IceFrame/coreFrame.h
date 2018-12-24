@@ -16,8 +16,12 @@ IceFrame is a data frame designed for machine learning and other data mining alg
 
 class IceFrame {
 public:
+	int rows;
+	int cols;
+	int *size;
 private:
 	void loadCSV(string filename);
+	void getSize();
 protected:
 };
 

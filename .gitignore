@@ -3,5 +3,6 @@ Debug/
 res/
 *.vcxproj
 *.vcxproj.filters
+*.vcxproj.user
 *.sln
 *.csv
