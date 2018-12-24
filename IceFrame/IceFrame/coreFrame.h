@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <list>
 
+using std::string;
+
 /*
 Ice Frame:
 IceFrame is a data frame designed for machine learning and other data mining algorithm
@@ -14,7 +16,8 @@ IceFrame is a data frame designed for machine learning and other data mining alg
 
 class IceFrame {
 public:
-
 private:
+	void loadCSV(string filename);
 protected:
 };
+
