@@ -1,0 +1,7 @@
+.vs/
+Debug/
+res/
+*.vcxproj
+*.vcxproj.filters
+*.sln
+*.csv
