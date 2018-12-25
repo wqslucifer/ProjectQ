@@ -1,7 +1,7 @@
 #include "coreFrame.h"
 
 
-void IceFrame::loadCSV(string filename)
+void IceFrame::loadCSV(string filename, char delim = ',')
 {
 	fstream file;
 	try
@@ -71,8 +71,11 @@ void IceFrame::loadCSV(string filename)
 }
 
 
-bool IceFrame::getOneCell(string &oneLine, string &cell, char delim)
+bool IceFrame::getOneCell(string &oneLine, string &cell, char delim=',')
 {
+	/*
+		read one cell from a line of csv
+	*/
 	int cellLen = 0;
 	bool ifBlock = false;
 	char cellEnd = delim;
@@ -124,8 +127,6 @@ void IceFrame::getSize()
 	this->size[1] = this->cols;
 }
 
-void IceFrame::setDelim(char delim) { this->delim = delim; }
-
 void IceFrame::display()
 {
 	for (int row = 0; row < rows; row++)
@@ -139,24 +140,60 @@ void IceFrame::display()
 	}
 }
 
-auto IceFrame::iloc(int row, int col)
+VAR IceFrame::iloc(int row, int col)
 {
-	std::visit(coutVisitor(), iceData[row][col]);
+	return iceData[row][col];
 }
 
-#ifdef DEBUG
-void IceFrame::testRegex(string num)
+bool IceFrame::all(int axis = 0) // axis: 0 column, 1 row
 {
-	cout << num << " is int:" << regex_match(num, sm, numeric_int) << endl;
-	cout << num << " is number:" << regex_match(num, sm, numeric) << endl;
+	try
+	{
+		if (axis == 0) // column
+		{
+			if (cols > 0) {
+			}
+			else {
+			}
+		}
+		else if (axis > 0) // row
+		{
+		}
+		else {
+			throw("axis input error");
+		}
+	}
+	catch (const std::exception& e)
+	{
+		cout << e.what() << endl;
+	}
 }
-#endif // DEBUG
+
+bool IceFrame::any(int axis=0) // axis: 0 column, 1 row
+{
+	try
+	{
+		if (axis == 0) // column
+		{
+		}
+		else if (axis > 0) // row
+		{
+		}
+		else {
+			throw("axis input error");
+		}
+	}
+	catch (const std::exception& e)
+	{
+		cout << e.what() << endl;
+	}
+}
 
 template<typename... Args>
-bool all(Args... args) { return (... && args); }
+bool checkAll(Args... args) { return (... && args); }
 
 template<typename... Args>
-bool any(Args... args) { return (... || args); }
+bool checkAny(Args... args) { return (... || args); }
 
 template<typename... Ts>
 void printAll(Ts&&... mXs)
@@ -171,17 +208,14 @@ void forArgs(TF&& mFn, Ts&&... mXs)
 }
 
 
-struct TypeCheckVisitor {
-	int operator()(const int n) const {
-		return dtype_int;
-	}
-	int operator()(const double b) const {
-		return dtype_double;
-	}
-	int operator()(const string& s) const {
-		return dtype_string;
-	}
-};
+
+#ifdef DEBUG
+void IceFrame::testRegex(string num)
+{
+	cout << num << " is int:" << regex_match(num, sm, numeric_int) << endl;
+	cout << num << " is number:" << regex_match(num, sm, numeric) << endl;
+}
+#endif // DEBUG
 
 
 void testfunc(variant<int, string> input) {

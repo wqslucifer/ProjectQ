@@ -28,6 +28,8 @@ constexpr int dtype_int = 0;
 constexpr int dtype_double = 1;
 constexpr int dtype_string = 2;
 
+typedef variant<int, double, string> VAR;
+
 /*
 Ice Frame:
 IceFrame is a data frame designed for machine learning and other data mining algorithm
@@ -45,6 +47,7 @@ struct coutVisitor {
 	}
 };
 
+
 class IceFrame {
 public:
 	int rows;
@@ -57,23 +60,22 @@ public:
 	regex numeric;
 	regex numeric_int;
 	IceFrame() {
-		delim = ',';
 		isEmpty = true;
 		numeric_int.assign("^(\\-|\\+)?0|[1-9]\\d*$", std::regex::ECMAScript);
 		numeric.assign("(^(\\-|\\+)?0|[1-9]\\d*)(\\.\\d+)?$", std::regex::ECMAScript);
 	}
-	void setDelim(char delim);
-	void loadCSV(string filename);
+	void loadCSV(string filename, char delim);
 	void display(void);
-	auto iloc(int row, int col);
+	VAR iloc(int row, int col);
+	vector<vector<VAR>> iloc(int *rows, int *cols);
 	void loc(variant<int,string> row, variant<int, string> col);
 	bool getOneCell(string &oneLine, string &cell, char delim);
+	bool all(int axis);
+	bool any(int axis);
 #ifdef DEBUG
 	void testRegex(string num);
 #endif // DEBUG
 private:
-	char delim;
-	typedef variant<int, double, string> VAR;
 	vector<vector<VAR>> iceData;
 	map<string, int> colName_Str_Int;
 	//////////////////////////////////////////////////////////////////////////
