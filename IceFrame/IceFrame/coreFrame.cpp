@@ -1,6 +1,7 @@
 #include "coreFrame.h"
 
 
+// csv
 void IceFrame::loadCSV(string filename, char delim = ',')
 {
 	fstream file;
@@ -22,7 +23,7 @@ void IceFrame::loadCSV(string filename, char delim = ',')
 			while (getline(sin, colName, delim))
 			{
 				columns.push_back(colName);
-				colName_Str_Int.insert(pair<string, int>(colName, colIndex));
+				colName_Str_Int.insert(pair<string, int>(colName, colIndex++));
 				++cols;
 			}
 		}
@@ -69,7 +70,6 @@ void IceFrame::loadCSV(string filename, char delim = ',')
 		cout << "unexpected error: " << e.what() << endl;
 	}
 }
-
 
 bool IceFrame::getOneCell(string &oneLine, string &cell, char delim=',')
 {
@@ -120,6 +120,7 @@ bool IceFrame::getOneCell(string &oneLine, string &cell, char delim=',')
 
 }
 
+//utls
 void IceFrame::getSize()
 {
 	this->size = new int[2];
@@ -140,11 +141,85 @@ void IceFrame::display()
 	}
 }
 
+// iloc
 VAR IceFrame::iloc(int row, int col)
 {
 	return iceData[row][col];
 }
 
+vector<vector<VAR>> IceFrame::iloc(vector<int> &rows, vector<int> &cols)
+{
+	vector<vector<VAR>> ret;
+	for (auto row : rows) {
+		vector<VAR> newRow;
+		for (auto col : cols) {
+			newRow.push_back(this->iceData[row][col]);
+		}
+		ret.push_back(newRow);
+	}
+	return ret;
+}
+
+vector<VAR> IceFrame::iloc(vector<int> &rows, int col)
+{
+	vector<VAR> ret;
+	for (auto row : rows) {
+		ret.push_back(this->iceData[row][col]);
+	}
+	return ret;
+}
+
+vector<VAR> IceFrame::iloc(int row, vector<int> &cols)
+{
+	vector<VAR> ret;
+	for (auto col : cols) {
+		ret.push_back(this->iceData[row][col]);
+	}
+	return ret;
+}
+
+// loc
+VAR IceFrame::loc(int row, string col)
+{
+	int i_col = colName_Str_Int[col];
+	return iceData[row][i_col];
+}
+
+vector<VAR> IceFrame::loc(int row, vector<string> cols)
+{
+	vector<VAR> ret;
+	vector<int> i_cols;
+	for_each(cols.begin(), cols.end(), [&](string c) {i_cols.push_back(this->colName_Str_Int[c]); });
+	for (auto col : i_cols)
+		ret.push_back(this->iceData[row][col]);
+	return ret;
+}
+
+vector<VAR> IceFrame::loc(vector<int> rows, string col)
+{
+	vector<VAR> ret;
+	int i_col = colName_Str_Int[col];
+	for (auto row : rows)
+		ret.push_back(this->iceData[row][i_col]);
+	return ret;
+}
+
+vector<vector<VAR>> IceFrame::loc(vector<int> rows, vector<string> cols)
+{
+	vector<int> i_cols;
+	for_each(cols.begin(), cols.end(), [&](string c) {i_cols.push_back(this->colName_Str_Int[c]); });
+	vector<vector<VAR>> ret;
+	for (auto row : rows) {
+		vector<VAR> newRow;
+		for (auto col : i_cols) {
+			newRow.push_back(this->iceData[row][col]);
+		}
+		ret.push_back(newRow);
+	}
+	return ret;
+}
+
+// bool
 bool IceFrame::all(int axis = 0) // axis: 0 column, 1 row
 {
 	try
@@ -218,9 +293,11 @@ void IceFrame::testRegex(string num)
 #endif // DEBUG
 
 
-void testfunc(variant<int, string> input) {
-	std::visit(coutVisitor(), input);
+void testfunc(vector<int> input) {
+	for (auto i : input)
+		cout << i << endl;
 }
+
 
 int main() {
 	string csvPath = "E:/project/ProjectQ/test/TitanicDataset/train.csv";
@@ -235,14 +312,29 @@ int main() {
 	trainset.testRegex("+.5615");
 	trainset.testRegex("+0.5615");
 	trainset.testRegex("-0.5615");
-
+	// get one cell test
 	string temp = "\"adf,\"\"alllll\"\"\",3214,,13";
 	string cell;
 	while (trainset.getOneCell(temp, cell, ',')) {
 		cout << cell << endl;
 	}
+
+	// iceFrame iloc test
+	vector<int> rows = { 1,3,5,7 };
+	auto ret = trainset.iloc(rows, 0);
+	for (auto i : ret) {
+		std::visit(coutVisitor(), i);
+	}
+
 #endif // DEBUGREGEX
 	trainset.loadCSV(csvPath);
-	trainset.display();
+	//trainset.display();
+
+	vector<string> cols = {"PassengerId","Name"};
+	auto ret = trainset.loc(0, cols);
+	for (auto i : ret) {
+		std::visit(coutVisitor(), i);
+	}
+
 	system("pause");
 }

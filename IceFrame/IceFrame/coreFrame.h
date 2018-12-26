@@ -64,14 +64,24 @@ public:
 		numeric_int.assign("^(\\-|\\+)?0|[1-9]\\d*$", std::regex::ECMAScript);
 		numeric.assign("(^(\\-|\\+)?0|[1-9]\\d*)(\\.\\d+)?$", std::regex::ECMAScript);
 	}
+	// csv
 	void loadCSV(string filename, char delim);
-	void display(void);
-	VAR iloc(int row, int col);
-	vector<vector<VAR>> iloc(int *rows, int *cols);
-	void loc(variant<int,string> row, variant<int, string> col);
 	bool getOneCell(string &oneLine, string &cell, char delim);
+	// iloc
+	VAR iloc(int row, int col);
+	vector<vector<VAR>> iloc(vector<int> &rows, vector<int> &cols);
+	vector<VAR> iloc(vector<int> &rows, int col);
+	vector<VAR> iloc(int row, vector<int> &cols);
+	// loc: locate columns
+	VAR loc(int row, string col);
+	vector<VAR> loc(int row, vector<string> cols);
+	vector<VAR> loc(vector<int> rows, string col);
+	vector<vector<VAR>> loc(vector<int> rows, vector<string> cols);
+	// bool
 	bool all(int axis);
 	bool any(int axis);
+	// utls
+	void display(void);
 #ifdef DEBUG
 	void testRegex(string num);
 #endif // DEBUG
