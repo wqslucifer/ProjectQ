@@ -92,7 +92,7 @@ IceFrame::IceFrame(IceFrame &newIce)
 		vector<VAR> newCol=col;
 		this->iceData.push_back(newCol);
 	}
-	this->empty = newIce.empty;
+	this->setEmpty(newIce.isEmpty());
 	this->columns = newIce.columns;
 	this->colTypes = newIce.colTypes;
 	this->getSize();
@@ -161,7 +161,7 @@ void IceFrame::loadCSV(string filename, char delim)
 			//iceData.push_back(oneRow);
 			this->index.push_back(rows++);
 		}
-		empty = cols + rows > 0 ? false : true;
+		this->setEmpty(cols + rows > 0 ? false : true);
 		this->getSize();
 	}
 	catch (const std::exception& e)

@@ -52,12 +52,10 @@ struct coutVisitor {
 };
 
 
-
 class BaseFrame{
 public:
 	BaseFrame();
 	virtual ~BaseFrame() {}
-	bool empty;
 	smatch sm;
 	regex re_numeric;
 	regex re_numeric_int;
@@ -69,6 +67,9 @@ public:
 	virtual void display(void) = 0;
 	virtual bool clean(void) = 0;
 private:
+	bool empty;
+protected:
+	void setEmpty(bool val);
 };
 
 BaseFrame::BaseFrame() {
@@ -79,13 +80,22 @@ BaseFrame::BaseFrame() {
 	re_boolean_false.assign("(False|false)", std::regex::ECMAScript);
 }
 
+bool BaseFrame::isEmpty()
+{
+	return this->empty;
+}
+
+void BaseFrame::setEmpty(bool val)
+{
+	this->empty = val;
+}
+
 
 class IceSeries:public BaseFrame {
 public:
 	int size;
 	vector<int> index;
 	string name;
-	int seriesType;
 	IceSeries();
 	IceSeries(IceSeries &newIce);
 	~IceSeries() { this->clean(); };
@@ -108,9 +118,10 @@ public:
 #endif // DEBUG
 private:
 	vector<VAR> iceData;
+	int seriesType;
 protected:
-};
 
+};
 
 class IceFrame:public BaseFrame {
 public:
