@@ -1,10 +1,35 @@
 #include "coreFrame.h"
 
+
+bool BaseFrame::isEmpty()
+{
+	return this->empty;
+}
+
+void BaseFrame::setEmpty(bool val)
+{
+	this->empty = val;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
 // iceSeries
 IceSeries::IceSeries() 
 {
 	this->size = 0;
 	this->seriesType = -1;
+	this->setEmpty(true);
+}
+
+IceSeries::IceSeries(vector<VAR> &other)
+{
+	this->size = other.size();
+	for (auto i = 0; i < other.size(); ++i) {
+		this->index.push_back(i);
+	}
+	this->seriesType = getDataType(other);
+	this->iceData = other;
+	this->setEmpty(false);
 }
 
 IceSeries::IceSeries(IceSeries &newIce)
@@ -14,13 +39,14 @@ IceSeries::IceSeries(IceSeries &newIce)
 	this->name = newIce.name;
 	this->seriesType = newIce.seriesType;
 	this->iceData = newIce.iceData;
+	this->setEmpty(false);
 }
-
 
 void IceSeries::initSeries(IceSeries *old)
 {
 	this->name = old->name;
 	this->seriesType = old->seriesType;
+	this->setEmpty(true);
 }
 
 // iloc
@@ -29,14 +55,61 @@ VAR IceSeries::iloc(int index)
 	return this->iceData[index];
 }
 
+IceSeries IceSeries::loc(vector<bool> index)
+{
+	try
+	{
+		if (index.size() != this->size) {
+			throw("input length not match Series size");
+		}
+		IceSeries ret;
+		ret.initSeries(this);
+		for (auto i = 0; i < index.size(); ++i) {
+			if (index[i])
+				ret.iceData.push_back(this->iceData[i]);
+		}
+		ret.setEmpty(false);
+		return ret;
+	}
+	catch (const std::exception& e)
+	{
+		cout << e.what() << endl;
+	}
+}
+
+IceSeries IceSeries::loc(IceSeries &index)
+{
+	try
+	{
+		if (index.size != this->size) {
+			throw("input length not match Series size");
+		}
+		IceSeries ret;
+		ret.initSeries(this);
+		for (auto i = 0; i < index.size; ++i) {
+			ret.iceData.push_back(this->iceData[i]);
+		}
+		ret.setEmpty(false);
+		return ret;
+	}
+	catch (const std::exception& e)
+	{
+		cout << e.what() << endl;
+	}
+}
+
 IceSeries IceSeries::subset(int start, int end) // include start, not include end
 {
+	if (start > end) {
+		throw("subset: start larger then end");
+	}
 	IceSeries ret;
 	ret.initSeries(this);
 	for (auto i = start; i < end; ++i) {
 		ret.index.push_back(this->index[i]);
 		ret.iceData.push_back(this->iceData[i]);
 	}
+	ret.setEmpty(false);
 	return ret;
 }
 
@@ -48,6 +121,73 @@ void IceSeries::reindex()
 	{
 		this->index.push_back(i);
 	}
+}
+
+string IceSeries::dtype(void)
+{
+	string ret;
+	switch (this->seriesType)
+	{
+	case dtype_empty:
+		ret = "NAN";
+		break;
+	case dtype_int:
+		ret = "int";
+		break;
+	case dtype_double:
+		ret = "double";
+		break;
+	case dtype_boolean:
+		ret = "boolean";
+		break;
+	case dtype_string:
+		ret = "string";
+		break;
+
+	default:
+		throw("unknow data type");
+		break;
+	}
+	return ret;
+}
+
+bool IceSeries::remove(int index)
+{
+	if (this->size < 1 || index < 0 || index >= this->size) {
+		return false;
+	}
+	else {
+		this->iceData.erase(this->iceData.begin() + index);
+		this->index.erase(this->index.begin() + index);
+		this->size--;
+		return true;
+	}
+}
+
+bool IceSeries::remove(VAR val)
+{
+	vector<VAR>::iterator i_data = this->iceData.begin();
+	vector<int>::iterator i_index = this->index.begin();
+	int count = 0;
+	for (auto i = 0; i < this->size; ++i, ++i_data, ++i_index)
+	{
+		if (*i_data == val)
+		{
+			this->iceData.erase(i_data);
+			this->index.erase(i_index);
+			++count;
+		}
+	}
+	this->size -= count;
+	if (this->size == 0)
+		this->setEmpty(true);
+	return true;
+}
+
+IceSeries IceSeries::isnull(void)
+{
+	IceSeries ret;
+	return ret;
 }
 
 // utls
@@ -151,7 +291,8 @@ void IceFrame::loadCSV(string filename, char delim)
 					cell = cellBuff;
 				}
 				else {
-					cell = string("NAN");
+					cell = std::monostate();
+					//cell = string("NAN");
 				}
 				iceData[col].push_back(cell);
 				++col;
@@ -491,8 +632,7 @@ int main() {
 
 #endif // DEBUGREGEX
 	trainset.loadCSV(csvPath);
-	//trainset.display();
-	auto subset = trainset.loc({1,3,5,7}, {"PassengerId", "Name"});
+	trainset.display();
 	//subset.display();
 	system("pause");
 }

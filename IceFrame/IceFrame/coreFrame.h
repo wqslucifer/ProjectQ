@@ -23,13 +23,13 @@
 
 using namespace std;
 
-constexpr int dtype_empty = -1;
-constexpr int dtype_int = 0;
-constexpr int dtype_double = 1;
-constexpr int dtype_boolean = 2;
-constexpr int dtype_string = 3;
+constexpr int dtype_empty = 0;
+constexpr int dtype_int = 1;
+constexpr int dtype_double = 2;
+constexpr int dtype_boolean = 3;
+constexpr int dtype_string = 4;
 
-typedef variant<int, double, bool, string> VAR;
+typedef variant<std::monostate, int, double, bool, string> VAR;
 
 /*
 Ice Frame:
@@ -37,6 +37,9 @@ IceFrame is a data frame designed for machine learning and other data mining alg
 */
 
 struct coutVisitor {
+	void operator()(const std::monostate input) const {
+		cout<<"NAN";
+	}
 	void operator()(const int input) const {
 		cout << input;
 	}
@@ -46,11 +49,53 @@ struct coutVisitor {
 	void operator()(const bool input) const {
 		cout << input;
 	}
-	void operator()(const string& input) const {
+	void operator()(const string input) const {
 		cout << input;
 	}
 };
 
+struct cmpVisitor {
+	bool operator()(const int input1, const int input2) const {
+		return input1 == input2;
+	}
+	bool operator()(const double input1, const double input2) const {
+		return input1 == input2;
+	}
+	bool operator()(const bool input1, const bool input2) const {
+		return input1 == input2;
+	}
+	bool operator()(const string input1, const string input2) const {
+		return input1 == input2;
+	}
+};
+
+struct typeVisitor {
+	int operator()(const std::monostate input) const {
+		return dtype_empty;
+	}
+	int operator()(const int input) const {
+		return dtype_int;
+	}
+	int operator()(const double input) const {
+		return dtype_double;
+	}
+	int operator()(const bool input) const {
+		return dtype_boolean;
+	}
+	int operator()(const string input) const {
+		return dtype_string;
+	}
+};
+
+int getDataType(vector<VAR> &data)
+{
+	int ret = dtype_empty;
+	for (auto d : data)
+	{
+		ret = std::max(ret, std::visit(typeVisitor(), d));
+	}
+	return ret;
+}
 
 class BaseFrame{
 public:
@@ -80,34 +125,38 @@ BaseFrame::BaseFrame() {
 	re_boolean_false.assign("(False|false)", std::regex::ECMAScript);
 }
 
-bool BaseFrame::isEmpty()
-{
-	return this->empty;
-}
-
-void BaseFrame::setEmpty(bool val)
-{
-	this->empty = val;
-}
-
-
+//////////////////////////////////////////////////////////////////////////
 class IceSeries:public BaseFrame {
 public:
-	int size;
+	size_t size;
 	vector<int> index;
 	string name;
 	IceSeries();
+	IceSeries(vector<VAR> &other);
 	IceSeries(IceSeries &newIce);
 	~IceSeries() { this->clean(); };
 	// iloc
 	VAR iloc(int index);
+	IceSeries loc(vector<bool> index);
+	IceSeries loc(IceSeries &index);
 	IceSeries subset(int start, int end);
 	// operate
 	string dtype(void);
 	bool remove(int index);
 	bool remove(VAR val);
-	void reindex();
+	void reindex(void);
+	IceSeries isnull(void);
+	int append(VAR other);
+	int append(vector<VAR> &other);
+	int append(IceSeries &other);
+	// calculate
+	double sum(IceSeries &out, int axis = 0, bool numeric_only= true, bool skipNA=true); // axis 0--col 1--row
+	double mean(IceSeries &out, int axis = 0, bool numeric_only = true, bool skipNA = true);
+	double median(IceSeries &out, int axis = 0, bool numeric_only = true, bool skipNA = true);
+	double max(IceSeries &out, int axis = 0, bool numeric_only = true, bool skipNA = true);
+	double min(IceSeries &out, int axis = 0, bool numeric_only = true, bool skipNA = true);
 	// utls
+	vector<VAR> data();
 	void display(void);
 	bool clean(void);
 	bool all(void);
@@ -122,6 +171,8 @@ private:
 protected:
 
 };
+
+//////////////////////////////////////////////////////////////////////////
 
 class IceFrame:public BaseFrame {
 public:
@@ -150,6 +201,15 @@ public:
 	vector<VAR> loc(int row, vector<string> cols);
 	vector<VAR> loc(vector<int> rows, string &col);
 	IceFrame loc(vector<int> rows, vector<string> cols);
+	// loc: bool
+	vector<VAR> loc(int row, vector<bool> cols);
+	vector<VAR> loc(vector<bool> rows, int col);
+	vector<VAR> loc(vector<bool> rows, string col);
+	IceFrame loc(vector<bool> rows, vector<string> cols);
+	IceFrame loc(vector<int> rows, vector<bool> cols);
+	IceFrame loc(vector<bool> rows, vector<bool> cols);
+
+
 	// bool
 	bool all(int axis);
 	bool any(int axis);
