@@ -1,15 +1,14 @@
 #pragma once
-#include <cstdio>
+#include "stdafx.h"
 #include <string>
 #include <vector>
 #include <map>
-#include <algorithm>
-#include <list>
-#include <variant>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <regex>
+#include <algorithm>
+#include <variant>
 
 #define UNKNOWN_TYPE -1
 
@@ -21,15 +20,27 @@
 #endif
 #endif // DEBUGREGEX
 
-using namespace std;
-
 constexpr int dtype_empty = 0;
 constexpr int dtype_int = 1;
 constexpr int dtype_double = 2;
 constexpr int dtype_boolean = 3;
 constexpr int dtype_string = 4;
 
-typedef variant<std::monostate, int, double, bool, string> VAR;
+
+using std::monostate;
+using std::variant;
+using std::cout;
+using std::endl;
+using std::string;
+using std::regex;
+using std::smatch;
+using std::vector;
+using std::exception;
+using std::max;
+
+using EMPTY = monostate;
+using VAR = variant<EMPTY, int, double, bool, string>;
+
 
 /*
 Ice Frame:
@@ -37,62 +48,62 @@ IceFrame is a data frame designed for machine learning and other data mining alg
 */
 
 struct coutVisitor {
-	void operator()(const std::monostate input) const {
+	void operator() (const EMPTY input) const {
 		cout<<"NAN";
 	}
-	void operator()(const int input) const {
+	void operator() (const int input) const {
 		cout << input;
 	}
-	void operator()(const double input) const {
+	void operator() (const double input) const {
 		cout << input;
 	}
-	void operator()(const bool input) const {
+	void operator() (const bool input) const {
 		cout << input;
 	}
-	void operator()(const string input) const {
+	void operator() (const string input) const {
 		cout << input;
 	}
 };
 
 struct cmpVisitor {
-	bool operator()(const int input1, const int input2) const {
+	bool operator() (const int input1, const int input2) const {
 		return input1 == input2;
-	}
-	bool operator()(const double input1, const double input2) const {
+	};
+	bool operator() (const double input1, const double input2) const {
 		return input1 == input2;
-	}
-	bool operator()(const bool input1, const bool input2) const {
+	};
+	bool operator() (const bool input1, const bool input2) const {
 		return input1 == input2;
-	}
-	bool operator()(const string input1, const string input2) const {
+	};
+	bool operator() (const string input1, const string input2) const {
 		return input1 == input2;
-	}
+	};
 };
 
 struct typeVisitor {
-	int operator()(const std::monostate input) const {
+	int operator()(const EMPTY input) const {
 		return dtype_empty;
-	}
+	};
 	int operator()(const int input) const {
 		return dtype_int;
-	}
+	};
 	int operator()(const double input) const {
 		return dtype_double;
-	}
+	};
 	int operator()(const bool input) const {
 		return dtype_boolean;
-	}
+	};
 	int operator()(const string input) const {
 		return dtype_string;
-	}
+	};
 };
 
-int getDataType(vector<VAR> &data)
+int getDataType(vector<variant<EMPTY, int, double, bool, string> > &data)
 {
 	int ret = dtype_empty;
 	for (auto d : data)
 	{
-		ret = std::max(ret, std::visit(typeVisitor(), d));
+		ret = max<int>(ret, std::visit(typeVisitor(), d));
 	}
 	return ret;
 }
@@ -119,26 +130,26 @@ protected:
 
 BaseFrame::BaseFrame() {
 	empty = true;
-	re_numeric_int.assign("^(\\-|\\+)?0|[1-9]\\d*$", std::regex::ECMAScript);
-	re_numeric.assign("(^(\\-|\\+)?0|[1-9]\\d*)(\\.\\d+)?$", std::regex::ECMAScript);
-	re_boolean_true.assign("(True|true)", std::regex::ECMAScript);
-	re_boolean_false.assign("(False|false)", std::regex::ECMAScript);
+	re_numeric_int.assign("^(\\-|\\+)?0|[1-9]\\d*$", regex::ECMAScript);
+	re_numeric.assign("(^(\\-|\\+)?0|[1-9]\\d*)(\\.\\d+)?$", regex::ECMAScript);
+	re_boolean_true.assign("(True|true)", regex::ECMAScript);
+	re_boolean_false.assign("(False|false)", regex::ECMAScript);
 }
 
 //////////////////////////////////////////////////////////////////////////
 class IceSeries:public BaseFrame {
 public:
-	size_t size;
 	vector<int> index;
 	string name;
+
 	IceSeries();
 	IceSeries(vector<VAR> &other);
 	IceSeries(IceSeries &newIce);
 	~IceSeries() { this->clean(); };
 	// iloc
 	VAR iloc(int index);
-	IceSeries loc(vector<bool> index);
-	IceSeries loc(IceSeries &index);
+	IceSeries* loc(vector<bool> index);
+	IceSeries* loc(IceSeries &index);
 	IceSeries subset(int start, int end);
 	// operate
 	string dtype(void);
@@ -166,6 +177,7 @@ public:
 	void testRegex(string num);
 #endif // DEBUG
 private:
+	size_t size;
 	vector<VAR> iceData;
 	int seriesType;
 protected:
@@ -188,7 +200,7 @@ public:
 	// csv
 	void loadCSV(string filename, char delim = ',');
 	bool getOneCell(string &oneLine, string &cell, char delim = ',');
-	void saveCSV(vector<vector<VAR>> obj, string filename);
+	void saveCSV(vector<vector<VAR> > obj, string filename);
 	// iloc
 	VAR iloc(int row, int col);
 	IceFrame iloc(vector<int> rows, vector<int> cols);
@@ -215,7 +227,7 @@ public:
 	bool any(int axis);
 	bool isnull();
 	// operate
-	vector<vector<VAR>> concat(IceFrame &obj, int axis=0, bool inplace=false, bool ignore_index=false);
+	vector<vector<VAR> > concat(IceFrame &obj, int axis=0, bool inplace=false, bool ignore_index=false);
 	//vector<vector<VAR>> merge(vector<vector<VAR>> obj, vector<int> left_on, vector<int> right_on);
 
 	// delete
@@ -236,11 +248,12 @@ public:
 	void testRegex(string num);
 #endif // DEBUG
 private:
-	vector<vector<VAR>> iceData;
-	map<string, int> colName_Str_Int;
+	vector<vector<VAR> > iceData;
+	std::map<string, int> colName_Str_Int;
 	//////////////////////////////////////////////////////////////////////////
 	void initArrtibute(IceFrame *old, vector<int> rows, vector<int> cols);
 	void getSize();
 	//bool getOneCell(string &oneLine, string &cell, char delim);
 protected:
 };
+

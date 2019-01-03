@@ -16,6 +16,8 @@ void BaseFrame::setEmpty(bool val)
 // iceSeries
 IceSeries::IceSeries() 
 {
+	this->index = {};
+	this->name = "";
 	this->size = 0;
 	this->seriesType = -1;
 	this->setEmpty(true);
@@ -55,46 +57,48 @@ VAR IceSeries::iloc(int index)
 	return this->iceData[index];
 }
 
-IceSeries IceSeries::loc(vector<bool> index)
+IceSeries* IceSeries::loc(vector<bool> index)
 {
 	try
 	{
 		if (index.size() != this->size) {
 			throw("input length not match Series size");
 		}
-		IceSeries ret;
-		ret.initSeries(this);
+		IceSeries *ret = new IceSeries();
+		ret->initSeries(this);
 		for (auto i = 0; i < index.size(); ++i) {
 			if (index[i])
-				ret.iceData.push_back(this->iceData[i]);
+				ret->iceData.push_back(this->iceData[i]);
 		}
-		ret.setEmpty(false);
+		ret->setEmpty(false);
 		return ret;
 	}
-	catch (const std::exception& e)
+	catch (const exception& e)
 	{
 		cout << e.what() << endl;
+		return nullptr;
 	}
 }
 
-IceSeries IceSeries::loc(IceSeries &index)
+IceSeries* IceSeries::loc(IceSeries &index)
 {
 	try
 	{
 		if (index.size != this->size) {
 			throw("input length not match Series size");
 		}
-		IceSeries ret;
-		ret.initSeries(this);
+		IceSeries *ret = new IceSeries();
+		ret->initSeries(this);
 		for (auto i = 0; i < index.size; ++i) {
-			ret.iceData.push_back(this->iceData[i]);
+			ret->iceData.push_back(this->iceData[i]);
 		}
-		ret.setEmpty(false);
+		ret->setEmpty(false);
 		return ret;
 	}
-	catch (const std::exception& e)
+	catch (const exception& e)
 	{
 		cout << e.what() << endl;
+		return nullptr;
 	}
 }
 
@@ -195,7 +199,7 @@ void IceSeries::display(void)
 {
 	cout << this->name << endl;
 	for (auto val : this->iceData) {
-		std::visit(coutVisitor(), val);
+		visit(coutVisitor(), val);
 		cout << endl;
 	}
 }
@@ -208,7 +212,7 @@ bool IceSeries::clean(void)
 		this->iceData.swap(emp);
 		return true;
 	}
-	catch (const std::exception& e)
+	catch (const exception& e)
 	{
 		cout << e.what() << endl;
 		return false;
@@ -241,7 +245,7 @@ IceFrame::IceFrame(IceFrame &newIce)
 // csv
 void IceFrame::loadCSV(string filename, char delim)
 {
-	fstream file;
+	std::fstream file;
 	try
 	{
 		file.open(filename.c_str(), std::ios::in);
@@ -254,7 +258,7 @@ void IceFrame::loadCSV(string filename, char delim)
 		// get csv file column names
 		string tempLine;
 		if (getline(file, tempLine)) {
-			istringstream sin(tempLine);
+			std::istringstream sin(tempLine);
 			string colName;
 			int colIndex = 0;
 			while (getline(sin, colName, delim))
@@ -262,7 +266,7 @@ void IceFrame::loadCSV(string filename, char delim)
 				vector<VAR> oneRow;
 				iceData.push_back(oneRow);
 				columns.push_back(colName);
-				colName_Str_Int.insert(pair<string, int>(colName, colIndex++));
+				colName_Str_Int.insert(std::pair<string, int>(colName, colIndex++));
 				++cols;
 			}
 		}
@@ -291,7 +295,7 @@ void IceFrame::loadCSV(string filename, char delim)
 					cell = cellBuff;
 				}
 				else {
-					cell = std::monostate();
+					cell = monostate();
 					//cell = string("NAN");
 				}
 				iceData[col].push_back(cell);
@@ -305,7 +309,7 @@ void IceFrame::loadCSV(string filename, char delim)
 		this->setEmpty(cols + rows > 0 ? false : true);
 		this->getSize();
 	}
-	catch (const std::exception& e)
+	catch (const exception& e)
 	{
 		cout << "unexpected error: " << e.what() << endl;
 	}
@@ -377,7 +381,7 @@ void IceFrame::display()
 	{
 		for (int col = 0; col < cols; col++)
 		{
-			std::visit(coutVisitor(), this->iceData[col][row]);
+			visit(coutVisitor(), this->iceData[col][row]);
 			cout << "\t";
 		}
 		cout << endl;
@@ -518,7 +522,7 @@ bool IceFrame::all(int axis = 0) // axis: 0 column, 1 row
 			throw("axis input error");
 		}
 	}
-	catch (const std::exception& e)
+	catch (const exception& e)
 	{
 		cout << e.what() << endl;
 	}
@@ -538,7 +542,7 @@ bool IceFrame::any(int axis=0) // axis: 0 column, 1 row
 			throw("axis input error");
 		}
 	}
-	catch (const std::exception& e)
+	catch (const exception& e)
 	{
 		cout << e.what() << endl;
 	}
@@ -550,13 +554,13 @@ bool IceFrame::clean()
 	try
 	{
 		vector<VAR> emp;
-		vector<vector<VAR>> emp_2d;
+		vector<vector<VAR> > emp_2d;
 		for (auto c = iceData.begin(); c != iceData.end(); ++c)
 			c->swap(emp);
 		iceData.swap(emp_2d);
 		return true;
 	}
-	catch (const std::exception& e)
+	catch (const exception& e)
 	{
 		cout << e.what() << endl;
 		return false;
@@ -605,6 +609,7 @@ void testfunc(vector<int> input) {
 	for (auto i : input)
 		cout << i << endl;
 }
+
 
 
 int main() {

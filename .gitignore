@@ -1,8 +1,5 @@
 .vs/
 Debug/
 res/
-*.vcxproj
-*.vcxproj.filters
-*.vcxproj.user
-*.sln
-*.csv
+x64/
+packages/
