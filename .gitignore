@@ -3,3 +3,8 @@ Debug/
 res/
 x64/
 packages/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.vcxproj

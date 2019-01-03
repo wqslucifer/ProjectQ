@@ -36,6 +36,7 @@ using std::regex;
 using std::smatch;
 using std::vector;
 using std::exception;
+using std::visit;
 using std::max;
 
 using EMPTY = monostate;
@@ -103,7 +104,7 @@ int getDataType(vector<variant<EMPTY, int, double, bool, string> > &data)
 	int ret = dtype_empty;
 	for (auto d : data)
 	{
-		ret = max<int>(ret, std::visit(typeVisitor(), d));
+		ret = max<int>(ret, visit(typeVisitor(), d));
 	}
 	return ret;
 }
