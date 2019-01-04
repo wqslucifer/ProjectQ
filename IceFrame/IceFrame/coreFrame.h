@@ -140,17 +140,15 @@ BaseFrame::BaseFrame() {
 //////////////////////////////////////////////////////////////////////////
 class IceSeries:public BaseFrame {
 public:
-	vector<int> index;
 	string name;
-
 	IceSeries();
 	IceSeries(vector<VAR> &other);
 	IceSeries(IceSeries &newIce);
 	~IceSeries() { this->clean(); };
 	// iloc
 	VAR iloc(int index);
-	IceSeries* loc(vector<bool> index);
-	IceSeries* loc(IceSeries &index);
+	IceSeries loc(vector<bool> index);
+	IceSeries loc(IceSeries &index);
 	IceSeries subset(int start, int end);
 	// operate
 	string dtype(void);
@@ -168,7 +166,10 @@ public:
 	double max(IceSeries &out, int axis = 0, bool numeric_only = true, bool skipNA = true);
 	double min(IceSeries &out, int axis = 0, bool numeric_only = true, bool skipNA = true);
 	// utls
+	vector<int> index(void);
 	vector<VAR> data();
+	int *value();
+	int size(void);
 	void display(void);
 	bool clean(void);
 	bool all(void);
@@ -178,9 +179,10 @@ public:
 	void testRegex(string num);
 #endif // DEBUG
 private:
-	size_t size;
-	vector<VAR> iceData;
+	size_t _size;
 	int seriesType;
+	vector<VAR> iceData;
+	vector<int> _index;
 protected:
 
 };
@@ -221,7 +223,6 @@ public:
 	IceFrame loc(vector<bool> rows, vector<string> cols);
 	IceFrame loc(vector<int> rows, vector<bool> cols);
 	IceFrame loc(vector<bool> rows, vector<bool> cols);
-
 
 	// bool
 	bool all(int axis);

@@ -16,18 +16,18 @@ void BaseFrame::setEmpty(bool val)
 // iceSeries
 IceSeries::IceSeries() 
 {
-	this->index = {};
+	this->_index = {};
 	this->name = "";
-	this->size = 0;
+	this->_size = 0;
 	this->seriesType = -1;
 	this->setEmpty(true);
 }
 
 IceSeries::IceSeries(vector<VAR> &other)
 {
-	this->size = other.size();
+	this->_size = other.size();
 	for (auto i = 0; i < other.size(); ++i) {
-		this->index.push_back(i);
+		this->_index.push_back(i);
 	}
 	this->seriesType = getDataType(other);
 	this->iceData = other;
@@ -36,8 +36,8 @@ IceSeries::IceSeries(vector<VAR> &other)
 
 IceSeries::IceSeries(IceSeries &newIce)
 {
-	this->size = newIce.size;
-	this->index = newIce.index;
+	this->_size = newIce._size;
+	this->_index = newIce._index;
 	this->name = newIce.name;
 	this->seriesType = newIce.seriesType;
 	this->iceData = newIce.iceData;
@@ -57,48 +57,48 @@ VAR IceSeries::iloc(int index)
 	return this->iceData[index];
 }
 
-IceSeries* IceSeries::loc(vector<bool> index)
+IceSeries IceSeries::loc(vector<bool> index)
 {
+	IceSeries ret;
 	try
 	{
-		if (index.size() != this->size) {
+		if (index.size() != this->_size) {
 			throw("input length not match Series size");
 		}
-		IceSeries *ret = new IceSeries();
-		ret->initSeries(this);
+		ret.initSeries(this);
 		for (auto i = 0; i < index.size(); ++i) {
 			if (index[i])
-				ret->iceData.push_back(this->iceData[i]);
+				ret.iceData.push_back(this->iceData[i]);
 		}
-		ret->setEmpty(false);
+		ret.setEmpty(false);
 		return ret;
 	}
 	catch (const exception& e)
 	{
 		cout << e.what() << endl;
-		return nullptr;
+		return ret;
 	}
 }
 
-IceSeries* IceSeries::loc(IceSeries &index)
+IceSeries IceSeries::loc(IceSeries &index)
 {
+	IceSeries ret;
 	try
 	{
-		if (index.size != this->size) {
+		if (index._size != this->_size) {
 			throw("input length not match Series size");
 		}
-		IceSeries *ret = new IceSeries();
-		ret->initSeries(this);
-		for (auto i = 0; i < index.size; ++i) {
-			ret->iceData.push_back(this->iceData[i]);
+		ret.initSeries(this);
+		for (auto i = 0; i < index._size; ++i) {
+			ret.iceData.push_back(this->iceData[i]);
 		}
-		ret->setEmpty(false);
+		ret.setEmpty(false);
 		return ret;
 	}
 	catch (const exception& e)
 	{
 		cout << e.what() << endl;
-		return nullptr;
+		return ret;
 	}
 }
 
@@ -110,7 +110,7 @@ IceSeries IceSeries::subset(int start, int end) // include start, not include en
 	IceSeries ret;
 	ret.initSeries(this);
 	for (auto i = start; i < end; ++i) {
-		ret.index.push_back(this->index[i]);
+		ret._index.push_back(this->_index[i]);
 		ret.iceData.push_back(this->iceData[i]);
 	}
 	ret.setEmpty(false);
@@ -120,10 +120,10 @@ IceSeries IceSeries::subset(int start, int end) // include start, not include en
 // operate
 void IceSeries::reindex()
 {
-	this->index.clear();
-	for (auto i = 0; i < this->size; ++i)
+	this->_index.clear();
+	for (auto i = 0; i < this->_size; ++i)
 	{
-		this->index.push_back(i);
+		this->_index.push_back(i);
 	}
 }
 
@@ -157,13 +157,13 @@ string IceSeries::dtype(void)
 
 bool IceSeries::remove(int index)
 {
-	if (this->size < 1 || index < 0 || index >= this->size) {
+	if (this->_size < 1 || index < 0 || index >= this->_size) {
 		return false;
 	}
 	else {
 		this->iceData.erase(this->iceData.begin() + index);
-		this->index.erase(this->index.begin() + index);
-		this->size--;
+		this->_index.erase(this->_index.begin() + index);
+		this->_size--;
 		return true;
 	}
 }
@@ -173,17 +173,17 @@ bool IceSeries::remove(VAR val)
 	vector<VAR>::iterator i_data = this->iceData.begin();
 	vector<int>::iterator i_index = this->index.begin();
 	int count = 0;
-	for (auto i = 0; i < this->size; ++i, ++i_data, ++i_index)
+	for (auto i = 0; i < this->_size; ++i, ++i_data, ++i_index)
 	{
 		if (*i_data == val)
 		{
 			this->iceData.erase(i_data);
-			this->index.erase(i_index);
+			this->_index.erase(i_index);
 			++count;
 		}
 	}
-	this->size -= count;
-	if (this->size == 0)
+	this->_size -= count;
+	if (this->_size == 0)
 		this->setEmpty(true);
 	return true;
 }
@@ -192,6 +192,34 @@ IceSeries IceSeries::isnull(void)
 {
 	IceSeries ret;
 	return ret;
+}
+
+int IceSeries::append(VAR other)
+{
+	this->iceData.push_back(other);
+	this->_index.push_back(this->_size);
+	++this->_size;
+	return 1;
+}
+
+int IceSeries::append(vector<VAR> &other)
+{
+	for (auto val : other) {
+		this->iceData.push_back(val);
+		this->_index.push_back(this->_size);
+		++this->_size;
+	}
+	return other.size();
+}
+
+int IceSeries::append(IceSeries &other)
+{
+	for (auto val : other.iceData) {
+		this->iceData.push_back(val);
+		this->_index.push_back(this->_size);
+		++this->_size;
+	}
+	return other.size();
 }
 
 // utls
@@ -217,6 +245,16 @@ bool IceSeries::clean(void)
 		cout << e.what() << endl;
 		return false;
 	}
+}
+
+vector<int> IceSeries::index()
+{
+	return this->_index;
+}
+
+int IceSeries::size()
+{
+	return this->_size;
 }
 
 //////////////////////////////////////////////////////////////////////////
