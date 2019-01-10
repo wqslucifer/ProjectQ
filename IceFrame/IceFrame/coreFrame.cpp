@@ -171,7 +171,7 @@ bool IceSeries::remove(int index)
 bool IceSeries::remove(VAR val)
 {
 	vector<VAR>::iterator i_data = this->iceData.begin();
-	vector<int>::iterator i_index = this->index.begin();
+	vector<int>::iterator i_index = this->_index.begin();
 	int count = 0;
 	for (auto i = 0; i < this->_size; ++i, ++i_data, ++i_index)
 	{
