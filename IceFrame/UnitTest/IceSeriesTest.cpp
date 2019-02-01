@@ -7,6 +7,8 @@
 #pragma comment(lib, "../x64/Release/IceFrame.lib")
 #endif
 
+// /D GTEST_HAS_TR1_TUPLE=0
+// /D GTEST_USE_OWN_TR1_TUPLE = 1
 
 class IceSeriesTest : public ::testing::Test
 {
