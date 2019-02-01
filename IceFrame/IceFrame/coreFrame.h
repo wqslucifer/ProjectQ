@@ -23,8 +23,8 @@
 constexpr int dtype_empty = 0;
 constexpr int dtype_int = 1;
 constexpr int dtype_double = 2;
-constexpr int dtype_boolean = 3;
-constexpr int dtype_string = 4;
+constexpr int dtype_string = 3;
+constexpr int dtype_boolean = 4;
 
 
 using std::monostate;
@@ -40,7 +40,7 @@ using std::visit;
 using std::max;
 
 using EMPTY = monostate;
-using VAR = variant<EMPTY, int, double, bool, string>;
+using VAR = variant<EMPTY, int, double, string>;
 
 
 /*
@@ -99,15 +99,6 @@ struct typeVisitor {
 	};
 };
 
-int getDataType(vector<variant<EMPTY, int, double, bool, string> > &data)
-{
-	int ret = dtype_empty;
-	for (auto d : data)
-	{
-		ret = max<int>(ret, visit(typeVisitor(), d));
-	}
-	return ret;
-}
 
 class BaseFrame{
 public:
@@ -129,20 +120,13 @@ protected:
 	void setEmpty(bool val);
 };
 
-BaseFrame::BaseFrame() {
-	empty = true;
-	re_numeric_int.assign("^(\\-|\\+)?0|[1-9]\\d*$", regex::ECMAScript);
-	re_numeric.assign("(^(\\-|\\+)?0|[1-9]\\d*)(\\.\\d+)?$", regex::ECMAScript);
-	re_boolean_true.assign("(True|true)", regex::ECMAScript);
-	re_boolean_false.assign("(False|false)", regex::ECMAScript);
-}
 
 //////////////////////////////////////////////////////////////////////////
 class IceSeries:public BaseFrame {
 public:
 	string name;
 	IceSeries();
-	IceSeries(vector<VAR> &other);
+	IceSeries(vector<VAR> other);
 	IceSeries(IceSeries &newIce);
 	~IceSeries() { this->clean(); };
 	// iloc
@@ -259,3 +243,18 @@ private:
 protected:
 };
 
+
+template<typename... Args>
+bool checkAll(Args... args);
+
+template<typename... Args>
+bool checkAny(Args... args);
+
+template<typename... Ts>
+void printAll(Ts&&... mXs);
+
+template<typename TF, typename... Ts>
+void forArgs(TF&& mFn, Ts&&... mXs);
+
+void testfunc(vector<int> input);
+int getDataType(vector<VAR> &data);

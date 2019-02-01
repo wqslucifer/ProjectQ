@@ -1,5 +1,12 @@
 #include "coreFrame.h"
 
+BaseFrame::BaseFrame() {
+	empty = true;
+	re_numeric_int.assign("^(\\-|\\+)?0|[1-9]\\d*$", regex::ECMAScript);
+	re_numeric.assign("(^(\\-|\\+)?0|[1-9]\\d*)(\\.\\d+)?$", regex::ECMAScript);
+	re_boolean_true.assign("(True|true)", regex::ECMAScript);
+	re_boolean_false.assign("(False|false)", regex::ECMAScript);
+}
 
 bool BaseFrame::isEmpty()
 {
@@ -23,7 +30,8 @@ IceSeries::IceSeries()
 	this->setEmpty(true);
 }
 
-IceSeries::IceSeries(vector<VAR> &other)
+
+IceSeries::IceSeries(vector<VAR> other)
 {
 	this->_size = other.size();
 	for (auto i = 0; i < other.size(); ++i) {
@@ -133,7 +141,7 @@ string IceSeries::dtype(void)
 	switch (this->seriesType)
 	{
 	case dtype_empty:
-		ret = "NAN";
+		ret = "EMPTY";
 		break;
 	case dtype_int:
 		ret = "int";
@@ -607,6 +615,7 @@ bool IceFrame::clean()
 
 //vector<vector<VAR>> IceFrame::concat(IceFrame &obj, int axis = 0, bool inplace = false, bool ignore_index = false);
 
+
 template<typename... Args>
 bool checkAll(Args... args) { return (... && args); }
 
@@ -648,7 +657,67 @@ void testfunc(vector<int> input) {
 		cout << i << endl;
 }
 
+int getDataType(vector<VAR > &data)
+{
+	int ret = dtype_empty;
+	int rollBackIndex = 0;
+	for (auto i = 0; i < data.size(); i++)
+	{
+		int dataType = visit(typeVisitor(), data[i]);
+		if (dataType > ret) {
+			ret = dataType;
+			rollBackIndex = i;
+		}
+		if (dataType < ret) {
+			if (dataType == 1)
+			{
+				int d = std::get<1>(data[i]);
+				if (ret == 2) {
+					data[i].emplace<2>(static_cast<double>(d));
+				}
+				else if (ret == 3) {
+					data[i].emplace<3>(std::to_string(d));
+				}
+			}
+			else if (dataType == 2)
+			{
+				double d = std::get<2>(data[i]);
+				if (ret == 3) {
+					data[i].emplace<3>(std::to_string(d));
+				}
+			}
+		}
+	}
+	if (rollBackIndex > 0) {
+		for (int i = 0; i < rollBackIndex; i++)
+		{
+			int dataType = visit(typeVisitor(), data[i]);
+			if (dataType < ret) {
+				if (dataType == 1)
+				{
+					int d = std::get<1>(data[i]);
+					if (ret == 2) {
+						data[i].emplace<2>(static_cast<double>(d));
+					}
+					else if (ret == 3) {
+						data[i].emplace<3>(std::to_string(d));
+					}
+				}
+				else if (dataType == 2)
+				{
+					double d = std::get<2>(data[i]);
+					if (ret == 3) {
+						data[i].emplace<3>(std::to_string(d));
+					}
+				}
+			}
+		}
+	}
+	return ret;
+}
 
+
+/*
 
 int main() {
 	string csvPath = "E:/project/ProjectQ/test/TitanicDataset/train.csv";
@@ -678,4 +747,4 @@ int main() {
 	trainset.display();
 	//subset.display();
 	system("pause");
-}
+}*/
