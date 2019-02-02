@@ -129,6 +129,10 @@ public:
 	IceSeries(vector<VAR> other);
 	IceSeries(IceSeries &newIce);
 	~IceSeries() { this->clean(); };
+	// operator
+	inline bool operator==(const IceSeries& other) const;
+	// compare
+	bool EQ(IceSeries *other);
 	// iloc
 	VAR iloc(int index);
 	IceSeries loc(vector<bool> index);
@@ -184,6 +188,7 @@ public:
 	IceFrame();
 	IceFrame(IceFrame &newIce);
 	~IceFrame() { clean(); };
+	// operator
 	// csv
 	void loadCSV(string filename, char delim = ',');
 	bool getOneCell(string &oneLine, string &cell, char delim = ',');

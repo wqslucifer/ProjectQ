@@ -22,23 +22,14 @@ protected:
 		s3 = new IceSeries({ "test",123,"t","345" });
 		s4 = new IceSeries({ "false","True","true","False","False" });
 		s5 = new IceSeries({ true, false, true, true, false });
+		s6 = new IceSeries({ 1,2,3,4,5 });
 	}
 	void TearDown() override{
-		delete s0;
-		delete s1;
-		delete s2;
-		delete s3;
-		delete s4;
-		delete s5;
+		delete s0, s1, s2, s3, s4, s5, s6;
 		delete var_test1;
 		delete var_test2;
 	}
-	IceSeries *s0;
-	IceSeries *s1;
-	IceSeries *s2;
-	IceSeries *s3;
-	IceSeries *s4;
-	IceSeries *s5;
+	IceSeries *s0,*s1,*s2,*s3,*s4,*s5,*s6;
 	vector<VAR> *var_test1;
 	vector<VAR> *var_test2;
 };
@@ -88,6 +79,13 @@ TEST_F(IceSeriesTest, ilocTest)
 	for (auto i = 0; i < s3->size(); i++) {
 		EXPECT_EQ(testCase3[i], std::get<string>(s3->iloc(i)));
 	}
+}
+
+TEST_F(IceSeriesTest, operatorEQ) 
+{
+	EXPECT_TRUE(s0->EQ(s6));
+	EXPECT_FALSE(s0->EQ(s1));
+	EXPECT_FALSE(s0->EQ(s5));
 }
 
 

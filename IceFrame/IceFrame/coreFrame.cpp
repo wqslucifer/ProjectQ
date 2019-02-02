@@ -59,6 +59,28 @@ void IceSeries::initSeries(IceSeries *old)
 	this->setEmpty(true);
 }
 
+inline bool IceSeries::operator==(const IceSeries &other) const
+{
+	if (this->_size != other._size)
+		return false;
+	for (auto i = 0; i < this->_size; i++) {
+		if (this->iceData[i] != other.iceData[i])
+			return false;
+	}
+	return true;
+}
+
+bool IceSeries::EQ(IceSeries* other)
+{
+	if (this->_size != other->_size)
+		return false;
+	for (auto i = 0; i < this->_size; i++) {
+		if (this->iceData[i] != other->iceData[i])
+			return false;
+	}
+	return true;
+}
+
 // iloc
 VAR IceSeries::iloc(int index)
 {
@@ -650,7 +672,6 @@ void IceSeries::testRegex(string num)
 	cout << num << " is false:" << regex_match(num, sm, re_boolean_false) << endl;
 }
 #endif // DEBUG
-
 
 void testfunc(vector<int> input) {
 	for (auto i : input)
